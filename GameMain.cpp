@@ -286,6 +286,15 @@ public:
         cout << "Speed:\t" << speedLevel;
     }
 
+    // refresh map area
+    static void RefreshMap()
+    {
+        for(int i = 1; i < map_y - 1; i++)
+        {
+            gotoxy(1, i);
+            cout << string(map_x - 2, ' ');
+        }
+    }
 };
 
 // if snake ate food, then return true
@@ -334,10 +343,10 @@ int main()
     // get key input
     char ctrl = getch();
 
-    // start game when input 'ENTER'
+    // quit game when input 'ESC'
     while(ctrl != 0x1b)
     {
-        // quit game when input 'ESC'
+        // wait for 'ENTER' to start
         if(ctrl != 0x0d)
         {
             ctrl = getch();
@@ -345,29 +354,27 @@ int main()
             continue;
         }
 
-        // print
-        Display::DrawMapInfo();
-        Display::DrawScore(0);
-        Display::DrawSpeed(0);
+        // refresh
+        Display::RefreshMap();
 
         Snake *snake = new Snake;
         Food *food = new Food(*snake);
 
-        while(ctrl == 0x0d)
+        // start game
+        while(true)
         {
             // if keyboard is hit, get input character
             if(kbhit())
             {
-                char key = getch();
+                ctrl = getch();
                 // flush input to ensure receive only one character every time
                 FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
-                snake->SnakeCtrl(key);
+                snake->SnakeCtrl(ctrl);
 
                 // if input 'ESC', then quit game
-                if(key == 0x1b)
+                if(ctrl == 0x1b)
                 {
-                    ctrl = key;
                     break;
                 }
             }
@@ -395,7 +402,7 @@ int main()
     }
 
     // display for game exit
-    Display::DrawMapInfo();
+    Display::RefreshMap();
     gotoxy(map_x / 2 - 4, map_y / 2);
     cout << "GAME EXIT";
     Sleep(1000);
