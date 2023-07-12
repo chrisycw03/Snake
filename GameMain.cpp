@@ -264,7 +264,7 @@ public:
         gotoxy(map_x + 2, info_y + 11);
         cout << "Author:\t\t" << "chrisycw03";
         gotoxy(map_x + 2, info_y + 12);
-        cout << "Version:\t" << "1.0";
+        cout << "Version:\t" << "1.1";
 
     }
 
@@ -289,10 +289,16 @@ public:
     // refresh map area
     static void RefreshMap()
     {
+        gotoxy(0, 0);
+        cout << string(map_x, '=');
+        gotoxy(0, map_y - 1);
+        cout << string(map_x, '=');
         for(int i = 1; i < map_y - 1; i++)
         {
-            gotoxy(1, i);
+            gotoxy(0, i);
+            cout << '#';
             cout << string(map_x - 2, ' ');
+            cout << '#';
         }
     }
 };
@@ -355,7 +361,9 @@ int main()
         }
 
         // refresh
-        Display::RefreshMap();
+        Display::DrawMapInfo();
+        Display::DrawScore(0);
+        Display::DrawSpeed(0);
 
         Snake *snake = new Snake;
         Food *food = new Food(*snake);
