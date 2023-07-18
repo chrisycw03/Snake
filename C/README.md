@@ -34,6 +34,7 @@
 
 ## 架構
 
+![](https://github.com/chrisycw03/Snake/blob/main/C/SnakeFlowChart.jpg)
 
 ## 資料結構
 
@@ -71,6 +72,10 @@
 - 碰撞
 - 吃
 - 生成食物
+
+# 遊戲畫面
+
+![](https://github.com/chrisycw03/Snake/blob/main/C/Screen.png)
 
 # 待解決問題
 
