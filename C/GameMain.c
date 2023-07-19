@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <wchar.h>
-#ifdef _WIN32
+#include <string.h>
+#ifdef _WIN32 // Windows OS
 	#include <conio.h>
 	#include <windows.h>
 #endif
@@ -37,10 +37,13 @@ int snake_speed_level = 0;
 int snake_score;
 Coordinate food;
 
+// 移動游標到x, y
 void gotoxy(int x, int y){
+	// 使用ANSI跳脫序列
     printf("%c[%d;%dH", 0x1B, y + 1, x + 1);
 }
 
+// 移動到最後
 void gotoEnd(){
     printf("%c[%d;%dH", 0x1B, range.y + 3, 0);
 }
@@ -51,10 +54,12 @@ void TimeToSleep(int milisec){
 	nanosleep(&request, &remain);
 }
 
+// 清除終端畫面
 void EraseDisplay(){
     printf("%c[%dJ", 0x1B, 1);
 }
 
+// 清除遊戲區域
 void RefreshDisplay(){
     char* blank = (char*)calloc(map_range.x - 2, sizeof(char));
     memset(blank, ' ', map_range.x - 2);
@@ -63,8 +68,11 @@ void RefreshDisplay(){
         gotoxy(1, i);
         printf("%s", blank);
     }
+	
+	free(blank);
 }
 
+// 初始化遊戲畫面
 void InitDisplay(){
     gotoxy(0, 0);
     for(int i = 0; i < range.y; i++)
@@ -115,6 +123,7 @@ void InitDisplay(){
     gotoEnd();
 }
 
+// 顯示Start畫面
 void DisplayStart(){
     gotoxy(4, map_range.y / 2);
     printf("%s", "PRESS 'ENTER'");
@@ -124,6 +133,7 @@ void DisplayStart(){
     gotoEnd();
 }
 
+// 顯示Game Over畫面
 void DisplayGameOver(){
 	key_ctrl = '\0';
 	
@@ -137,6 +147,7 @@ void DisplayGameOver(){
     gotoEnd();
 }
 
+// 顯示Exit畫面
 void DisplayGameExit(){
 	RefreshDisplay();
 	gotoxy(6, map_range.y / 2);
@@ -144,6 +155,7 @@ void DisplayGameExit(){
     gotoEnd();
 }
 
+// 刷新分數
 void RefreshScore(int score){
     gotoxy(map_range.x + 12, 2);
     printf("%-4d", score);
@@ -157,12 +169,14 @@ void RefreshScore(int score){
     gotoEnd();
 }
 
+// 刷新速度
 void RefreshSpeed(int speed){
     gotoxy(map_range.x + 12, 3);
     printf("%d", speed);
     gotoEnd();
 }
 
+// 初始化貪吃蛇
 void InitSnake(){
     RefreshDisplay();
 
@@ -198,6 +212,17 @@ void InitSnake(){
     gotoEnd();
 }
 
+// 銷毀貪吃蛇
+void DestroySnake(){
+	SnakeBody* node = snake_head;
+	while(node != NULL){
+		snake_head = snake_head->next;
+		free(node);
+		node = snake_head;
+	}
+}
+
+// 碰撞判定
 int IsCollided(){
     SnakeBody* head = snake_head->next;
     SnakeBody* node = head->next;
@@ -217,6 +242,7 @@ int IsCollided(){
 	return 0;
 }
 
+// 生成食物
 void CreateFood(){
     srand(time(NULL));
     food.x = rand() % (map_range.x - 2) + 1;
@@ -256,6 +282,7 @@ void CreateFood(){
     gotoEnd();
 }
 
+// 吃東西判定
 int IsEaten(){
     SnakeBody* head = snake_head->next;
     if(head->body.x == food.x && head->body.y == food.y)
@@ -275,6 +302,7 @@ int IsEaten(){
 
 }
 
+// 刷新貪吃蛇位置
 void RefreshSnake(){
 	SnakeBody* node = snake_head->next;
 	SnakeBody* new_head = (SnakeBody*)malloc(sizeof(SnakeBody));
@@ -307,6 +335,7 @@ void RefreshSnake(){
 	gotoEnd();
 }
 
+// 遊戲控制
 void GameCtrl(){
 	
 	key_ctrl = getch();
@@ -377,9 +406,8 @@ int main(){
 		} while(IsCollided() != 1 && key_ctrl != 0x1B);
 		
 		DisplayGameOver();
+		DestroySnake();
 		GameCtrl();
-		
-		
 	}
 	
 	DisplayGameExit();
