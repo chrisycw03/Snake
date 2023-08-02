@@ -19,19 +19,22 @@ const int display_y = map_y;
 int bestScore = 0;
 
 // set Console cursor location
-void gotoxy(short x, short y)
-{
+void gotoxy(int x, int y){
     COORD coord;
     coord.X = x;
     coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
+void GotoEnd(){
+	COORD coord = {0, display_y + 3};
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
 class Food;
 
 // define snake behavior and properties
-class Snake
-{
+class Snake{
     friend class Food;
 
 private:
@@ -43,19 +46,19 @@ private:
 
 public:
     // constructor
-    Snake()
-    {
+    Snake(){
         // initial snake body length
         int init_length = 4;
         m_body.resize(init_length);
 
         // draw snake
-        for(int i = 0; i < init_length; i++)
-        {
+        for(int i = 0; i < init_length; i++){
             m_body[i].X = map_x / 2 + i;
             m_body[i].Y = map_y / 2;
             gotoxy(m_body[i].X, m_body[i].Y);
+			cout << "\033[0;32m";
             cout << "*";
+			cout << "\033[0m";
         }
 
         // initial other class member
@@ -68,14 +71,12 @@ public:
     }
 
     // get current speed
-    int getSpeed()
-    {
+    int getSpeed(){
         return m_speed;
     }
 
     // get key input, and change direction of snake
-    void SnakeCtrl(char key)
-    {
+    void SnakeCtrl(char key){
         switch(key)
         {
         case 'W':
@@ -105,15 +106,17 @@ public:
 
     // refresh and draw snake location
     // just need to update head and tail of snake
-    void SnakeMove(Food& food)
-    {
+    void SnakeMove(Food& food){
+		
         // draw new snake head
         COORD newHead;
         newHead.X = m_body[0].X + m_direction.X;
         newHead.Y = m_body[0].Y + m_direction.Y;
         m_body.push_front(newHead);
         gotoxy(newHead.X, newHead.Y);
-        cout << "*";
+        cout << "\033[0;32m";
+		cout << "*";
+		cout << "\033[0m";
 
         // if snake did not eat food, then erase tail location at last step
         if(!isEatFood(food))
@@ -122,24 +125,21 @@ public:
             cout << " ";
             m_body.pop_back();
         }
-
+		GotoEnd();
     }
 
     // if snake ate food, then return true
     bool isEatFood(Food& food);
 
     // if snake collided with itself or wall, then return true
-    bool isCollision()
-    {
+    bool isCollision(){
         // check locations of snake head and wall
-        if(m_body[0].X == 0 || m_body[0].X == (map_x - 1) || m_body[0].Y == 0 || m_body[0].Y == (map_y - 1))
-        {
+        if(m_body[0].X == 0 || m_body[0].X == (map_x - 1) || m_body[0].Y == 0 || m_body[0].Y == (map_y - 1)){
             return true;
         }
 
         // check locations of snake head and body
-        for(size_t i = 1; i < m_body.size(); i++)
-        {
+        for(size_t i = 1; i < m_body.size(); i++){
             if(m_body[0].X == m_body[i].X && m_body[0].Y == m_body[i].Y)
                 return true;
         }
@@ -150,8 +150,7 @@ public:
 };
 
 // define food location and behavior
-class Food
-{
+class Food{
     friend class Snake;
 
 private:
@@ -159,8 +158,7 @@ private:
 
 public:
     // constructor
-    Food(Snake snake)
-    {
+    Food(Snake snake){
         // initialize random seed
         srand(time(NULL));
 
@@ -169,15 +167,12 @@ public:
     }
 
     // if food is eaten, then generate new food
-    void isEaten(Snake snake)
-    {
+    void isEaten(Snake snake){
         // generate food location in x direction
         size_t i = 0;
-        while(i < snake.m_body.size())
-        {
+        while(i < snake.m_body.size()){
             // prevent food location coincide with snake
-            if(m_location.X == snake.m_body[i].X || i == 0)
-            {
+            if(m_location.X == snake.m_body[i].X || i == 0){
                 // make food locate inside map area
                 m_location.X = rand() % (map_x - 2) + 1;
                 i = 0;
@@ -187,8 +182,7 @@ public:
 
         // generate food location in y direction
         i = 0;
-        while(i < snake.m_body.size())
-        {
+        while(i < snake.m_body.size()){
             // prevent food location coincide with snake
             if(m_location.Y == snake.m_body[i].Y || i == 0)
             {
@@ -201,45 +195,35 @@ public:
 
         // draw food
         gotoxy(m_location.X, m_location.Y);
+		cout << "\033[0;33m";
         cout << "$";
+		cout << "\033[0m";
 
     }
 
 };
 
-class Display
-{
+class Display{
     friend Snake;
 
 public:
-    static void DrawMapInfo()
-    {
+	// initial game display
+    static void DrawMapInfo(){
         // refresh Console
         system("cls");
 
         // draw game frame
-        for(int i = 0; i < display_y; i++)
-        {
-            for(int j = 0; j < display_x; j++)
-            {
-                if(i == 0 || i == display_y - 1)
-                {
-                    cout << "=";
-                }
-                else if(j == 0 || j == map_x - 1 || j == display_x - 1)
-                {
+        for(int i = 0; i < display_y; i++){
+            for(int j = 0; j < display_x; j++){
+                if(i == 0 || i == display_y - 1){
                     cout << "#";
-                }
-                else if(i == info_y && j >= map_x)
-                {
-                    cout << "=";
-                }
-                else
-                {
+                }else if(j == 0 || j == map_x - 1 || j == display_x - 1){
+                    cout << "#";
+                }else if(i == info_y && j >= map_x){
+                    cout << "#";
+                }else{
                     cout << " ";
                 }
-
-
             }
             cout << endl;
         }
@@ -265,12 +249,13 @@ public:
         cout << "Author:\t\t" << "chrisycw03";
         gotoxy(map_x + 2, info_y + 12);
         cout << "Version:\t" << "1.1";
-
+		
+		DrawScore(0);
+		DrawSpeed(0);
     }
 
     // draw score
-    static void DrawScore(int score)
-    {
+    static void DrawScore(int score){
         gotoxy(map_x + 2, 2);
         cout << "Score:\t" << score;
         if(score > bestScore)
@@ -280,19 +265,17 @@ public:
     }
 
     // draw speed level
-    static void DrawSpeed(int speedLevel)
-    {
+    static void DrawSpeed(int speedLevel){
         gotoxy(map_x + 2, 4);
         cout << "Speed:\t" << speedLevel;
     }
 
     // refresh map area
-    static void RefreshMap()
-    {
+    static void RefreshMap(){
         gotoxy(0, 0);
-        cout << string(map_x, '=');
+        cout << string(map_x, '#');
         gotoxy(0, map_y - 1);
-        cout << string(map_x, '=');
+        cout << string(map_x, '#');
         for(int i = 1; i < map_y - 1; i++)
         {
             gotoxy(0, i);
@@ -301,11 +284,40 @@ public:
             cout << '#';
         }
     }
+	
+	// draw game status: start, restart, game over
+	static void DrawStatus(int i){
+		// i = 0: print start
+		// i = 1: print game over
+		// i = 2: print game exit
+		switch(i){
+		case 0:
+			gotoxy(4, map_y / 2);
+			cout << "PRESS 'ENTER' TO START";
+			break;
+		case 1:
+			gotoxy(10, map_y / 2 - 1);
+			cout << "GAME OVER!";
+			gotoxy(3, map_y / 2);
+			cout << "PRESS 'ENTER' TO RESTART";
+			break;
+		case 2:
+			RefreshMap();
+			gotoxy(10, map_y / 2);
+			cout << "GAME EXIT!";
+			Sleep(1000);
+			break;
+		default:
+			break;
+		}
+			
+		GotoEnd();
+	}
+	
 };
 
 // if snake ate food, then return true
-bool Snake::isEatFood(Food& food)
-{
+bool Snake::isEatFood(Food& food){
     // if snake head coincide with food, then snake ate food
     if(m_body.front().X == food.m_location.X && m_body.front().Y == food.m_location.Y)
     {
@@ -337,52 +349,43 @@ bool Snake::isEatFood(Food& food)
     return false;
 }
 
-int main()
-{
+int main(){
     Display::DrawMapInfo();
-    Display::DrawScore(0);
-    Display::DrawSpeed(0);
-
-    gotoxy(map_x / 2 - 11, map_y / 2);
-    cout << "PRESS 'ENTER' TO START";
-
+	Display::DrawStatus(0);
+	
     // get key input
     char ctrl = getch();
 
     // quit game when input 'ESC'
-    while(ctrl != 0x1b)
-    {
+    while(ctrl != 0x1b){
         // wait for 'ENTER' to start
-        if(ctrl != 0x0d)
-        {
+        if(ctrl != 0x0d){
             ctrl = getch();
             FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
             continue;
         }
 
         // refresh
-        Display::DrawMapInfo();
-        Display::DrawScore(0);
-        Display::DrawSpeed(0);
-
+		Display::RefreshMap();
+		
+		// new snake and food
         Snake *snake = new Snake;
         Food *food = new Food(*snake);
 
         // start game
-        while(true)
-        {
+        while(true){
+			
             // if keyboard is hit, get input character
-            if(kbhit())
-            {
+            if(kbhit()){
                 ctrl = getch();
+				
                 // flush input to ensure receive only one character every time
                 FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
                 snake->SnakeCtrl(ctrl);
 
                 // if input 'ESC', then quit game
-                if(ctrl == 0x1b)
-                {
+                if(ctrl == 0x1b){
                     break;
                 }
             }
@@ -392,13 +395,9 @@ int main()
 
             // if snake collided, then end current game
             // wait for restart or quit
-            if(snake->isCollision())
-            {
-                gotoxy(map_x / 2 - 4, map_y / 2);
-                cout << "GAME OVER";
+            if(snake->isCollision()){
+				Display::DrawStatus(1);
                 ctrl = '\0';
-                gotoxy(map_x / 2 - 11, map_y / 2 + 1);
-                cout << "PRESS 'ENTER' TO RESTART";
                 delete snake;
                 delete food;
                 break;
@@ -410,11 +409,7 @@ int main()
     }
 
     // display for game exit
-    Display::RefreshMap();
-    gotoxy(map_x / 2 - 4, map_y / 2);
-    cout << "GAME EXIT";
-    Sleep(1000);
-    gotoxy(0, map_y);
+    Display::DrawStatus(2);
 
     return 0;
 }
