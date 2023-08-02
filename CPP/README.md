@@ -108,4 +108,4 @@ void gotoxy(short x, short y)
 ```
 
 # 05 Main()函數
-
+|[](https://github.com/chrisycw03/Snake/blob/main/CPP/SnakeFlowChartCPP.jpg)
